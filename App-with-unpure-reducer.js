@@ -2,40 +2,35 @@ import * as React from "react";
 
 const apiUrl = "https://jsonplaceholder.typicode.com/todos";
 
-const reducer = (state, action) => {
+const reducer = async  (state, action) => {
   switch (action.type) {
-    case "UPDATE_TODOS": {
-       console.log(' --- case "UPDATE_TODOS": ---');  
-      return { ...state, todos: action.payload };
-    }
-    case "UPDATE_TODO_COMPLETED": {
-         console.log(' --- case "UPDATE_TODO_COMPLETED": ---');  
-      return {
-        ...state,
-        todos: state.todos.map(todo => {
-          if (todo.id === action.payload) {
-            return {
-              ...todo,
-              completed: !todo.completed
-            };
-          } else {
-            return todo;
-          }
+    case "FETCH_TODOS": {
+      console.log("fetching");
+      const  todos = await  fetch(apiUrl)
+      .then(response => response.json())
+        .then(json => {
+          const todos = json.slice(0, 9);
+          console.log("done fetching");
+          return todos;
         })
+        .catch(error => console.log("error", error));
+      return  { 
+        ...state,
+        todos
       };
     }
   }
-};
+}
 
-const middleware = dispatch => action => {
+/* const middleware = dispatch => action => {
   switch (action.type) {
     case "FETCH_TODOS": {
-      console.log("-- fetching --");
+      console.log("fetching");
       fetch(apiUrl)
         .then(response => response.json())
         .then(json => {
           const todos = json.slice(0, 9);
-          console.log("-- done fetching --");
+          console.log("done fetching");
           dispatch({ type: "UPDATE_TODOS", payload: todos });
         })
         .catch(error => console.log("error", error));
@@ -46,16 +41,16 @@ const middleware = dispatch => action => {
       break;
     }
   }
-};
+}; */
 
 const App = () => {
   const [state, dispatch_] = React.useReducer(reducer, {
     todos: []
   });
-  const dispatch = middleware(dispatch_);
+  //const dispatch = middleware(dispatch_);
   const todos = state.todos;
   React.useEffect(() => {
-    dispatch({ type: "FETCH_TODOS" });
+    dispatch_({ type: "FETCH_TODOS" });
   }, []);
   return (
     <>
